@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Office.Interop.Excel;
+using Excel = Microsoft.Office.Interop.Excel;
 using System.Data.OleDb;
 using System.Data.Common;
 using System.Windows.Forms;
@@ -17,6 +17,7 @@ namespace ManageEmailLists
     {
         private string connectionString;
         private string filename, newFilename;
+        private string path;
         private List<string> initialList;
         string[] sheetNames;
 
@@ -29,40 +30,70 @@ namespace ManageEmailLists
         {
             OpenFileDialog dialog = new OpenFileDialog();
 
-            dialog.Filter = "ms excel 2003 files (*.xls)|*.xls|ms excel 2007 files (*.xlsx)|*.xlsx";
+            dialog.Filter = "Ms excel 2003 files (*.xls)|*.xls|Ms excel 2007 files (*.xlsx)|*.xlsx";
             dialog.InitialDirectory = "C:";
-            dialog.Title = "Άνοιγμα αρχείου excel";
+            dialog.Title = "Open excel file";
+
             if (dialog.ShowDialog() == DialogResult.OK)
-                filename = dialog.FileName;
+                path = dialog.FileName;
 
-            initialList = new List<string>();
+            Excel.Application excelApp = new Excel.Application();
 
-            sheetNames = GetExcelSheetNames(filename);
-            connectionString = @"Provider=Microsoft.Jet.OLEDB.4.0;
-                Data Source=" + filename + ";Extended Properties=Excel 8.0;";
-
-            DbProviderFactory factory = DbProviderFactories.GetFactory("System.Data.OleDb");
-
-            using (DbConnection connection = factory.CreateConnection())
+            if (excelApp != null)
             {
-                connection.ConnectionString = connectionString;
+                Excel.Workbook excelWorkbook = excelApp.Workbooks.Open(path, 0, true, 5, "", "", true,
+                    Excel.XlPlatform.xlWindows, "\t", false, false, 0, true, 1, 0);
+                Excel.Worksheet excelWorksheet = (Excel.Worksheet)excelWorkbook.Sheets[1];
+                Excel.Range excelRange = excelWorksheet.UsedRange;
 
-                using (DbCommand command = connection.CreateCommand())
+                int rows = excelRange.Rows.Count;
+                int cols = excelRange.Columns.Count;
+
+                for (int i = 1; i <= rows; i++)
                 {
-                    command.CommandText = "SELECT Email FROM [" + sheetNames[0] + "]";
-
-                    connection.Open();
-
-                    using (DbDataReader reader = command.ExecuteReader())
+                    for (int j = 1; j <= cols; j++)
                     {
-                        while (reader.Read())
-                        {
-                            initialList.Add(reader["Email"].ToString());
-                        }
+                        Excel.Range range = (excelWorksheet.Cells[i, 1] as Excel.Range);
+                        string cellValue = range.Value.ToString();
+
+                        //TODO:
                     }
-                    connection.Close();
                 }
+
+                excelWorkbook.Close();
+                excelApp.Quit();
             }
+
+
+            //initialList = new List<string>();
+
+            //sheetNames = GetExcelSheetNames(filename);
+
+            //string connectionString =
+            //        String.Format("Provider=Microsoft.ACE.OLEDB.12.0;Data Source={0};Extended Properties=Excel 12.0;", filename);
+
+            //DbProviderFactory factory = DbProviderFactories.GetFactory("System.Data.OleDb");
+
+            //using (DbConnection connection = factory.CreateConnection())
+            //{
+            //    connection.ConnectionString = connectionString;
+
+            //    using (DbCommand command = connection.CreateCommand())
+            //    {
+            //        command.CommandText = "SELECT Email FROM [" + sheetNames[0] + "]";
+
+            //        connection.Open();
+
+            //        using (DbDataReader reader = command.ExecuteReader())
+            //        {
+            //            while (reader.Read())
+            //            {
+            //                initialList.Add(reader["Email"].ToString());
+            //            }
+            //        }
+            //        connection.Close();
+            //    }
+            //}
 
             btnFindDuplicates.Enabled = true;
             btnExportEmailsWithoutDuplicates.Enabled = true;
@@ -89,8 +120,10 @@ namespace ManageEmailLists
                 // Create connection string.
                 //string connectionString = @"Provider=Microsoft.Jet.OLEDB.4.0;" +
                 //    "Data Source=" + filename + ";Extended Properties=Excel 8.0;";
+
                 string connectionString =
-                    String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=Excel 8.0;", excelFile);
+                    String.Format("Provider=Microsoft.ACE.OLEDB.12.0;Data Source={0};Extended Properties=Excel 12.0;", excelFile);
+
                 //string connectionString =
                 //    String.Format("Provider=Microsoft.ACE.OLEDB.12.0;Data Source={0};Extended Properties=\"Excel 8.0;HDR=YES\";", excelFile);
 
