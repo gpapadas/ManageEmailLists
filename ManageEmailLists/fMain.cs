@@ -113,8 +113,12 @@ namespace ManageEmailLists
             excelWorkbook.SaveAs(newFileName, Excel.XlFileFormat.xlOpenXMLWorkbook, missingValue, missingValue,
                 false, false, Excel.XlSaveAsAccessMode.xlNoChange, Excel.XlSaveConflictResolution.xlUserResolution, true,
                 missingValue, missingValue, missingValue);
+
+            //TODO: Commented code below is for xls files. I need to check the version of Excel (xls, xlsx)
+
             //excelWorkbook.SaveAs(newFileName, Excel.XlFileFormat.xlWorkbookNormal, misValue, misValue, misValue,
             //    misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue, misValue, misValue, misValue);
+
             excelWorkbook.Close(true, missingValue, missingValue);
             excelApp.Quit();
 
