@@ -16,9 +16,7 @@ namespace ManageEmailLists
     public partial class fMain : Form
     {
         private string connectionString;
-        private string filename, newFilename;
-        private string path;
-        private List<string> initialList;
+        private string fileName, newFileName;
         private List<string> emails;
         string[] sheetNames;
 
@@ -32,19 +30,20 @@ namespace ManageEmailLists
             // Open the file.
             OpenFileDialog dialog = new OpenFileDialog();
 
-            dialog.Filter = "Ms excel 2003 files (*.xls)|*.xls|Ms excel 2007 files (*.xlsx)|*.xlsx";
+            dialog.Filter = "Ms Excel 2007 files (*.xlsx)|*.xlsx|Ms Excel 2003 files (*.xls)|*.xls";
             dialog.InitialDirectory = "C:";
             dialog.Title = "Open excel file";
 
             if (dialog.ShowDialog() == DialogResult.OK)
-                path = dialog.FileName;
+            {
+                fileName = dialog.FileName;
+            }
 
-            // Read excel file.
             Excel.Application excelApp = new Excel.Application();
 
             if (excelApp != null)
             {
-                Excel.Workbook excelWorkbook = excelApp.Workbooks.Open(path, 0, true, 5, "", "", true,
+                Excel.Workbook excelWorkbook = excelApp.Workbooks.Open(fileName, 0, true, 5, "", "", true,
                     Excel.XlPlatform.xlWindows, "\t", false, false, 0, true, 1, 0);
                 Excel.Worksheet excelWorksheet = (Excel.Worksheet)excelWorkbook.Sheets[1];
                 Excel.Range excelRange = excelWorksheet.UsedRange;
@@ -63,7 +62,7 @@ namespace ManageEmailLists
                         Excel.Range range = (excelWorksheet.Cells[i, 1] as Excel.Range);
                         string cellValue = range.Value.ToString();
 
-                        // Add to list
+                        // Add to list.
                         emails.Add(cellValue);
                     }
                 }
@@ -80,7 +79,7 @@ namespace ManageEmailLists
 
         private void BtnFindDuplicates_Click(object sender, EventArgs e)
         {
-            List<string> duplicates = findDuplicates(emails);
+            List<string> duplicates = FindDuplicates(emails);
 
             lbDuplicateEmails.Items.Clear();
             foreach (string value in duplicates)
@@ -91,17 +90,52 @@ namespace ManageEmailLists
 
         private void BtnExportEmailsWithoutDuplicates_Click(object sender, EventArgs e)
         {
+            List<string> removedDuplicates = RemoveDuplicates(emails);
 
+            //Excel.Application xlApp;
+            Excel.Application excelApp = new Excel.Application();
+            Excel.Workbook excelWorkbook;
+            Excel.Worksheet excelWorksheet;
+            object missingValue = System.Reflection.Missing.Value;
+
+            //xlApp = new Excel.ApplicationClass();
+            excelWorkbook = excelApp.Workbooks.Add(missingValue);
+
+            excelWorksheet = (Excel.Worksheet)excelWorkbook.Worksheets.get_Item(1);
+            excelWorksheet.Cells[1, 1] = "Email";
+
+            for (int index = 0; index < removedDuplicates.Count; index++)
+            {
+                excelWorksheet.Cells[index + 2, 1] = removedDuplicates[index];
+            }
+
+            newFileName = fileName.Replace(".xlsx", " - without duplicates.xlsx");
+            excelWorkbook.SaveAs(newFileName, Excel.XlFileFormat.xlOpenXMLWorkbook, missingValue, missingValue,
+                false, false, Excel.XlSaveAsAccessMode.xlNoChange, Excel.XlSaveConflictResolution.xlUserResolution, true,
+                missingValue, missingValue, missingValue);
+            //excelWorkbook.SaveAs(newFileName, Excel.XlFileFormat.xlWorkbookNormal, misValue, misValue, misValue,
+            //    misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue, misValue, misValue, misValue);
+            excelWorkbook.Close(true, missingValue, missingValue);
+            excelApp.Quit();
+
+            // Release objects.
+            ReleaseObject(excelWorksheet);
+            ReleaseObject(excelWorkbook);
+            ReleaseObject(excelApp);
+
+            MessageBox.Show("The excel file created. You can find it at: " + newFileName, "File created",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private void BtnExportPrivateBusinessEmails_Click(object sender, EventArgs e)
+        private void BtnExportPersonalBusinessEmails_Click(object sender, EventArgs e)
         {
-
+            //TODO:
         }
 
         private String[] GetExcelSheetNames(string excelFile)
         {
-            //TODO: Delete method.
+            //TODO: Delete all the method probably.
+
             OleDbConnection connection = null;
             System.Data.DataTable dt = null;
 
@@ -161,7 +195,12 @@ namespace ManageEmailLists
             }
         }
 
-        private static List<string> findDuplicates(List<string> inputList)
+        /// <summary>
+        /// Finds duplicates in a list and returns its distinct values.
+        /// </summary>
+        /// <param name="inputList"></param>
+        /// <returns></returns>
+        private static List<string> FindDuplicates(List<string> inputList)
         {
             List<string> duplicates = new List<string>();
             HashSet<string> uniques = new HashSet<string>();
@@ -179,6 +218,41 @@ namespace ManageEmailLists
             }
 
             return duplicates.Distinct().ToList();
+        }
+
+        private List<string> RemoveDuplicates(List<string> inputList)
+        {
+
+            Dictionary<string, int> dict = new Dictionary<string, int>();
+            List<string> outputList = new List<string>();
+
+            foreach (string input in inputList)
+            {
+                if (!dict.ContainsKey(input))
+                {
+                    dict.Add(input, 0);
+                    outputList.Add(input);
+                }
+            }
+            return outputList;
+        }
+
+        private void ReleaseObject(object o)
+        {
+            try
+            {
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(o);
+                o = null;
+            }
+            catch (Exception e)
+            {
+                o = null;
+                MessageBox.Show("Exception Occured while releasing object " + e.ToString());
+            }
+            finally
+            {
+                GC.Collect();
+            }
         }
     }
 }

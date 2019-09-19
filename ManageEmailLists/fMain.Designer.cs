@@ -63,9 +63,9 @@
             this.btnExportPrivateBusinessEmails.Name = "btnExportPrivateBusinessEmails";
             this.btnExportPrivateBusinessEmails.Size = new System.Drawing.Size(163, 23);
             this.btnExportPrivateBusinessEmails.TabIndex = 2;
-            this.btnExportPrivateBusinessEmails.Text = "Export private and business emails";
+            this.btnExportPrivateBusinessEmails.Text = "Export personal and business emails";
             this.btnExportPrivateBusinessEmails.UseVisualStyleBackColor = true;
-            this.btnExportPrivateBusinessEmails.Click += new System.EventHandler(this.BtnExportPrivateBusinessEmails_Click);
+            this.btnExportPrivateBusinessEmails.Click += new System.EventHandler(this.BtnExportPersonalBusinessEmails_Click);
             // 
             // lbDuplicateEmails
             // 
