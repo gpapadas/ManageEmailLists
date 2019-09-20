@@ -133,7 +133,81 @@ namespace ManageEmailLists
 
         private void BtnExportPersonalBusinessEmails_Click(object sender, EventArgs e)
         {
-            //TODO:
+            List<string> gmailList = new List<string>();
+            List<string> yahooList = new List<string>();
+            List<string> hotmailList = new List<string>();
+            List<string> windowsLiveList = new List<string>();
+            //List<string> otenetList = new List<string>();
+            List<string> personalEmails = new List<string>();
+            List<string> businessEmails = new List<string>();
+            int index, outIndex = 0;
+
+            foreach (string email in emails)
+            {
+                if (email.Contains("@gmail") || email.Contains("@yahoo")
+                    || email.Contains("@hotmail") || email.Contains("@windowslive"))
+                {
+                    personalEmails.Add(email);
+                }
+                else
+                {
+                    businessEmails.Add(email);
+                }
+            }
+
+            Excel.Application excelApp;
+            Excel.Workbook excelWorkbook;
+            Excel.Worksheet excelWorkSheet;
+            object missingValue = System.Reflection.Missing.Value;
+
+            excelApp = new Excel.Application();
+            excelWorkbook = excelApp.Workbooks.Add(missingValue);
+
+            excelWorkSheet = (Excel.Worksheet)excelWorkbook.Worksheets.get_Item(1);
+            excelWorkSheet.Cells[1, 1] = "Personal emails";
+            excelWorkSheet.Cells[1, 4] = "Business emails";
+            excelWorkSheet.Cells[1, 8] = "Website of business emails";
+
+            // Export personal emails.
+            for (index = 0; index < personalEmails.Count; index++)
+            {
+                excelWorkSheet.Cells[index + 2, 1] = personalEmails[index];
+                //outIndex++;
+            }
+
+            // Export business emails.
+            for (index = 0; index < businessEmails.Count; index++)
+            {
+                excelWorkSheet.Cells[index + 2, 4] = businessEmails[index];
+                //outIndex++;
+            }
+
+            // Export websites from the business emails.
+            for (index = 0; index < businessEmails.Count; index++)
+            {
+                excelWorkSheet.Cells[index + 2, 8] =
+                    businessEmails[index].Substring(businessEmails[index].IndexOf("@") + 1,
+                    (businessEmails[index].Length - 1) - businessEmails[index].IndexOf("@"));
+            }
+
+            newFileName = fileName.Replace(".xlsx", "- personal and private emails.xlsx");
+            excelWorkbook.SaveAs(newFileName, Excel.XlFileFormat.xlOpenXMLWorkbook, missingValue, missingValue,
+                false, false, Excel.XlSaveAsAccessMode.xlNoChange, Excel.XlSaveConflictResolution.xlUserResolution, true,
+                missingValue, missingValue, missingValue);
+
+            //TODO: Commented code below is for xls files. I need to check the version of Excel (xls, xlsx)
+
+            //excelWorkbook.SaveAs(newFileName, Excel.XlFileFormat.xlWorkbookNormal, misValue, misValue, misValue,
+            //    misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue, misValue, misValue, misValue);
+            excelWorkbook.Close(true, missingValue, missingValue);
+            excelApp.Quit();
+
+            ReleaseObject(excelWorkSheet);
+            ReleaseObject(excelWorkbook);
+            ReleaseObject(excelApp);
+
+            MessageBox.Show("The excel file created. You can find it at: " + newFileName, "File created",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private String[] GetExcelSheetNames(string excelFile)
