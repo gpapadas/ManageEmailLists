@@ -4,7 +4,7 @@ A C#.Net project that allows you to import emails and manage them, through Excel
 
 Basic functions:
 
-- Find duplicates
+- Find and display duplicates
 - Extract emails without duplicates
 - Extract personal and business emails separately
 - Extract websites of business emails (along with the above functionality)
