@@ -7,5 +7,6 @@ Basic functions:
 - Find duplicates
 - Extract emails without duplicates
 - Extract personal and business emails separately
+- Extract websites of business emails (along with the above functionality)
 
 More features are going to be added, like more file types and functionality.
