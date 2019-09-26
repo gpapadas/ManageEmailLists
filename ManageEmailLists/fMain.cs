@@ -59,8 +59,8 @@ namespace ManageEmailLists
                 {
                     for (int j = 1; j <= cols; j++)
                     {
-                        Excel.Range range = (excelWorksheet.Cells[i, 1] as Excel.Range);
-                        string cellValue = range.Value.ToString();
+                        Excel.Range range = (excelWorksheet.Cells[i+1, 1] as Excel.Range);
+                        string cellValue = range.Value != null ? range.Value.ToString() : string.Empty;
 
                         // Add to list.
                         emails.Add(cellValue);
@@ -100,7 +100,7 @@ namespace ManageEmailLists
             excelWorkbook = excelApp.Workbooks.Add(missingValue);
 
             excelWorksheet = (Excel.Worksheet)excelWorkbook.Worksheets.get_Item(1);
-            excelWorksheet.Cells[1, 1] = "Email";
+            excelWorksheet.Cells[1, 1] = "Emails";
 
             for (int index = 0; index < removedDuplicates.Count; index++)
             {
@@ -214,7 +214,7 @@ namespace ManageEmailLists
             ReleaseObject(excelWorkbook);
             ReleaseObject(excelApp);
 
-            MessageBox.Show("The excel file created. You can find it at: " + newFileName, "File created",
+            MessageBox.Show($"The excel file created. You can find it at: {newFileName}", "File created",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -279,7 +279,7 @@ namespace ManageEmailLists
             catch (Exception e)
             {
                 o = null;
-                MessageBox.Show("Exception Occured while releasing object " + e.ToString());
+                MessageBox.Show($"Exception Occured while releasing object {e.ToString()}");
             }
             finally
             {
