@@ -60,7 +60,7 @@ namespace ManageEmailLists
                     for (int j = 1; j <= cols; j++)
                     {
                         Excel.Range range = (excelWorksheet.Cells[i+1, 1] as Excel.Range);
-                        string cellValue = range.Value != null ? range.Value.ToString() : string.Empty;
+                        string cellValue = range.Value.ToString() ?? string.Empty;
 
                         // Add to list.
                         emails.Add(cellValue);
