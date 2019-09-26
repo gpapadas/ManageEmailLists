@@ -82,6 +82,7 @@ namespace ManageEmailLists
             List<string> duplicates = FindDuplicates(emails);
 
             lbDuplicateEmails.Items.Clear();
+
             foreach (string value in duplicates)
             {
                 lbDuplicateEmails.Items.Add(value);
@@ -131,7 +132,7 @@ namespace ManageEmailLists
             ReleaseObject(excelWorkbook);
             ReleaseObject(excelApp);
 
-            MessageBox.Show("The excel file created. You can find it at: " + newFileName, "File created",
+            MessageBox.Show($"The excel file created. You can find it at: {newFileName}", "File created",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -143,7 +144,6 @@ namespace ManageEmailLists
             List<string> windowsLiveList = new List<string>();
             List<string> personalEmails = new List<string>();
             List<string> businessEmails = new List<string>();
-            int index = 0;
 
             foreach (string email in emails)
             {
@@ -172,19 +172,19 @@ namespace ManageEmailLists
             excelWorkSheet.Cells[1, 8] = "Website of business emails";
 
             // Export personal emails.
-            for (index = 0; index < personalEmails.Count; index++)
+            for (int index = 0; index < personalEmails.Count; index++)
             {
                 excelWorkSheet.Cells[index + 2, 1] = personalEmails[index];
             }
 
             // Export business emails.
-            for (index = 0; index < businessEmails.Count; index++)
+            for (int index = 0; index < businessEmails.Count; index++)
             {
                 excelWorkSheet.Cells[index + 2, 4] = businessEmails[index];
             }
 
             // Export websites from the business emails.
-            for (index = 0; index < businessEmails.Count; index++)
+            for (int index = 0; index < businessEmails.Count; index++)
             {
                 excelWorkSheet.Cells[index + 2, 8] =
                     businessEmails[index].Substring(businessEmails[index].IndexOf("@") + 1,
@@ -250,7 +250,6 @@ namespace ManageEmailLists
         /// <returns></returns>
         private List<string> RemoveDuplicates(List<string> inputList)
         {
-
             Dictionary<string, int> dict = new Dictionary<string, int>();
             List<string> outputList = new List<string>();
 
@@ -262,6 +261,7 @@ namespace ManageEmailLists
                     outputList.Add(input);
                 }
             }
+
             return outputList;
         }
 
