@@ -26,9 +26,9 @@ namespace ManageEmailLists
             // Open the file.
             OpenFileDialog dialog = new OpenFileDialog();
 
-            dialog.Filter = "Ms Excel 2007 files (*.xlsx)|*.xlsx|Ms Excel 2003 files (*.xls)|*.xls";
+            dialog.Filter = "Ms Excel 2007 files (*.xlsx)|*.xlsx|Ms Excel 2003 files (*.xls)|*.xls|Text Files (*.txt)|*.txt";
             dialog.InitialDirectory = "C:";
-            dialog.Title = "Open excel file";
+            dialog.Title = "Open file";
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
@@ -38,37 +38,49 @@ namespace ManageEmailLists
                 fileExtension = fileInfo.Extension;
             }
 
-            Excel.Application excelApp = new Excel.Application();
+            // Initialize the emails list.
+            emails = new List<string>();
 
-            // Read the excel file.
-            if (excelApp != null)
+            if (fileExtension == ".txt")
             {
-                Excel.Workbook excelWorkbook = excelApp.Workbooks.Open(fileName, 0, true, 5, "", "", true,
-                    Excel.XlPlatform.xlWindows, "\t", false, false, 0, true, 1, 0);
-                Excel.Worksheet excelWorksheet = (Excel.Worksheet)excelWorkbook.Sheets[1];
-                Excel.Range excelRange = excelWorksheet.UsedRange;
-
-                // Get rows and columns count.
-                int rows = excelRange.Rows.Count;
-                int cols = excelRange.Columns.Count;
-
-                // Initialize the emails list.
-                emails = new List<string>();
-
-                for (int i = 1; i <= rows; i++)
+                string line;
+                StreamReader file = new StreamReader(fileName);
+                while ((line = file.ReadLine()) != null)
                 {
-                    for (int j = 1; j <= cols; j++)
-                    {
-                        Excel.Range range = (excelWorksheet.Cells[i+1, 1] as Excel.Range);
-                        string cellValue = range.Value.ToString() ?? string.Empty;
-
-                        // Add to list.
-                        emails.Add(cellValue);
-                    }
+                    emails.Add(line);
                 }
+            }
+            else
+            {
+                Excel.Application excelApp = new Excel.Application();
 
-                excelWorkbook.Close();
-                excelApp.Quit();
+                // Read the excel file.
+                if (excelApp != null)
+                {
+                    Excel.Workbook excelWorkbook = excelApp.Workbooks.Open(fileName, 0, true, 5, "", "", true,
+                        Excel.XlPlatform.xlWindows, "\t", false, false, 0, true, 1, 0);
+                    Excel.Worksheet excelWorksheet = (Excel.Worksheet)excelWorkbook.Sheets[1];
+                    Excel.Range excelRange = excelWorksheet.UsedRange;
+
+                    // Get rows and columns count.
+                    int rows = excelRange.Rows.Count;
+                    int cols = excelRange.Columns.Count;
+
+                    for (int i = 1; i <= rows; i++)
+                    {
+                        for (int j = 1; j <= cols; j++)
+                        {
+                            Excel.Range range = (excelWorksheet.Cells[i + 1, 1] as Excel.Range);
+                            string cellValue = range.Value.ToString() ?? string.Empty;
+
+                            // Add to list.
+                            emails.Add(cellValue);
+                        }
+                    }
+
+                    excelWorkbook.Close();
+                    excelApp.Quit();
+                }
             }
 
             // Enable the other buttons.
@@ -116,11 +128,18 @@ namespace ManageEmailLists
                     false, false, Excel.XlSaveAsAccessMode.xlNoChange, Excel.XlSaveConflictResolution.xlUserResolution, true,
                     missingValue, missingValue, missingValue);
             }
-            else
+            else if (fileExtension == ".xls")
             {
                 newFileName = fileName.Replace(".xls", " - without duplicates.xls");
                 excelWorkbook.SaveAs(newFileName, Excel.XlFileFormat.xlWorkbookNormal, missingValue, missingValue,
                     missingValue, missingValue, Excel.XlSaveAsAccessMode.xlExclusive, missingValue, missingValue,
+                    missingValue, missingValue, missingValue);
+            }
+            else
+            {
+                newFileName = fileName.Replace(".txt", " - without duplicates.xlsx");
+                excelWorkbook.SaveAs(newFileName, Excel.XlFileFormat.xlOpenXMLWorkbook, missingValue, missingValue,
+                    false, false, Excel.XlSaveAsAccessMode.xlNoChange, Excel.XlSaveConflictResolution.xlUserResolution, true,
                     missingValue, missingValue, missingValue);
             }
 
@@ -138,17 +157,14 @@ namespace ManageEmailLists
 
         private void BtnExportPersonalBusinessEmails_Click(object sender, EventArgs e)
         {
-            List<string> gmailList = new List<string>();
-            List<string> yahooList = new List<string>();
-            List<string> hotmailList = new List<string>();
-            List<string> windowsLiveList = new List<string>();
             List<string> personalEmails = new List<string>();
             List<string> businessEmails = new List<string>();
 
             foreach (string email in emails)
             {
                 if (email.Contains("@gmail") || email.Contains("@yahoo")
-                    || email.Contains("@hotmail") || email.Contains("@windowslive"))
+                    || email.Contains("@hotmail") || email.Contains("@windowslive")
+                    || email.Contains("@outlook"))
                 {
                     personalEmails.Add(email);
                 }
@@ -199,11 +215,18 @@ namespace ManageEmailLists
                     false, false, Excel.XlSaveAsAccessMode.xlNoChange, Excel.XlSaveConflictResolution.xlUserResolution, true,
                     missingValue, missingValue, missingValue);
             }
-            else
+            else if (fileExtension == ".xls")
             {
                 newFileName = fileName.Replace(".xls", " - personal and business emails.xls");
                 excelWorkbook.SaveAs(newFileName, Excel.XlFileFormat.xlWorkbookNormal, missingValue, missingValue,
                     missingValue, missingValue, Excel.XlSaveAsAccessMode.xlExclusive, missingValue, missingValue,
+                    missingValue, missingValue, missingValue);
+            }
+            else
+            {
+                newFileName = fileName.Replace(".txt", " - personal and business emails.xlsx");
+                excelWorkbook.SaveAs(newFileName, Excel.XlFileFormat.xlOpenXMLWorkbook, missingValue, missingValue,
+                    false, false, Excel.XlSaveAsAccessMode.xlNoChange, Excel.XlSaveConflictResolution.xlUserResolution, true,
                     missingValue, missingValue, missingValue);
             }
 
