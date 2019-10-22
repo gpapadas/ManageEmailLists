@@ -14,7 +14,7 @@ namespace ManageEmailLists
     public partial class fMain : Form
     {
         private string fileName, newFileName, fileExtension;
-        private List<string> emails;
+        private List<string> emails, emailsWithoutDuplicates;
 
         public fMain()
         {
@@ -103,7 +103,7 @@ namespace ManageEmailLists
 
         private void BtnExportEmailsWithoutDuplicates_Click(object sender, EventArgs e)
         {
-            List<string> removedDuplicates = RemoveDuplicates(emails);
+            emailsWithoutDuplicates = RemoveDuplicates(emails);
 
             Excel.Application excelApp = new Excel.Application();
             Excel.Workbook excelWorkbook;
@@ -115,9 +115,9 @@ namespace ManageEmailLists
             excelWorksheet = (Excel.Worksheet)excelWorkbook.Worksheets.get_Item(1);
             excelWorksheet.Cells[1, 1] = "Emails";
 
-            for (int index = 0; index < removedDuplicates.Count; index++)
+            for (int index = 0; index < emailsWithoutDuplicates.Count; index++)
             {
-                excelWorksheet.Cells[index + 2, 1] = removedDuplicates[index];
+                excelWorksheet.Cells[index + 2, 1] = emailsWithoutDuplicates[index];
             }
 
             // Check the file extension and save the new file accordingly.
@@ -160,7 +160,9 @@ namespace ManageEmailLists
             List<string> personalEmails = new List<string>();
             List<string> businessEmails = new List<string>();
 
-            foreach (string email in emails)
+            emailsWithoutDuplicates = RemoveDuplicates(emails);
+
+            foreach (string email in emailsWithoutDuplicates)
             {
                 if (email.Contains("@gmail") || email.Contains("@yahoo")
                     || email.Contains("@hotmail") || email.Contains("@windowslive")
